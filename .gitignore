@@ -1,0 +1,59 @@
+node_modules/
+public/
+tests/coverage/
+coverage/
+ca_output.pdf
+npm-debug.log
+database/seeders/will-all-states-seed-single.sql
+database/scripts/logs
+Archive.zip
+database/seeders/haven_life*
+*.DS_Store
+.vscode/settings.json
+.idea
+
+# environment variables
+*.env
+.env.development
+.env.test
+.env.*.local
+!.env.example
+
+# generated files
+temp_pdf_build
+!temp_pdf_build/junk.txt
+sequelize-data.json
+ssl/
+_tmp
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# go.sum should be committed
+!go.sum
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+ssh_key
+stack.yml
+pipeline.yml
+.nyc_output
+dist
+.eslintcache
+
+twdb.tar
+twdb-2023-04-03.sql
+
+twdb-mysql8.sql
+evalkit-bundle.cjs
