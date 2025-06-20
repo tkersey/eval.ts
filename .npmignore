@@ -1,25 +1,33 @@
 # Source files
-src/
+/src/
 *.ts
-!*.d.ts
+!dist/**/*.d.ts
 
-# Test files
-tests/
+# Test files  
+/tests/
+/__tests__/
 **/*.test.*
 **/*.spec.*
 jest.config.js
 
 # Examples
-examples/
+/examples/
 
 # Development files
 .gitignore
+.gitignore
 .eslintrc*
+.eslintcache
 tsconfig.json
 tsconfig.eslint.json
+.mocharc*
+.nvmrc
 
 # Scripts
 *.sh
+
+# Build artifacts
+tsconfig.tsbuildinfo
 
 # Misc
 node_modules/
@@ -27,3 +35,9 @@ node_modules/
 .github/
 coverage/
 .nyc_output/
+.vscode/
+.idea/
+
+# Keep dist
+!dist/
+!dist/**/*
