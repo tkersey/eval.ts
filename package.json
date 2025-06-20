@@ -1,22 +1,63 @@
 {
   "name": "deepeval-ts",
+  "private": true,
   "version": "0.1.0",
   "description": "TypeScript implementation of DeepEval G-Eval metric",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "dist/**/*",
-    "README.md"
+    "dist/**/*"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts", 
+      "default": "./dist/core/index.js"
+    },
+    "./metrics": {
+      "types": "./dist/metrics/index.d.ts",
+      "default": "./dist/metrics/index.js"
+    },
+    "./models": {
+      "types": "./dist/models/index.d.ts",
+      "default": "./dist/models/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "./": [
+        "./dist/index.d.ts"
+      ],
+      "core": [
+        "./dist/core/index.d.ts"
+      ],
+      "metrics": [
+        "./dist/metrics/index.d.ts"
+      ],
+      "models": [
+        "./dist/models/index.d.ts"
+      ],
+      "utils": [
+        "./dist/utils/index.d.ts"
+      ]
+    }
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
+    "build:check": "tsc --noEmit",
     "dev": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build",
-    "prepare": "npm run build"
+    "prepare": "npm run build || echo 'Build failed during prepare'"
   },
   "repository": {
     "type": "git",
@@ -27,9 +68,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "openai": "^4.0.0",
-    "anthropic": "^0.0.0",
+    "anthropic": "^0.0.0", 
     "zod": "^3.22.0",
-    "p-retry": "^6.0.0"
+    "p-retry": "^6.0.0",
+    "typescript": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -38,10 +80,9 @@
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
     "jest": "^29.0.0",
-    "ts-jest": "^29.0.0",
-    "typescript": "^5.0.0"
+    "ts-jest": "^29.0.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.16"
   }
 }

@@ -1,44 +1,29 @@
 # Source files
 src/
-examples/
-tests/
-
-# Config files
-tsconfig.json
-jest.config.js
-.eslintrc*
-
-# Scripts
-run-example.sh
-
-# Development files
 *.ts
 !*.d.ts
 
-# Git files
-.git/
+# Test files
+tests/
+**/*.test.*
+**/*.spec.*
+jest.config.js
+
+# Examples
+examples/
+
+# Development files
 .gitignore
+.eslintrc*
+tsconfig.json
+tsconfig.eslint.json
 
-# Node modules
+# Scripts
+*.sh
+
+# Misc
 node_modules/
-
-# Lock files (optional, some prefer to include these)
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.git/
+.github/
+coverage/
+.nyc_output/
