@@ -1,8 +1,5 @@
 import OpenAI from 'openai';
-import { z } from 'zod';
-import { zodResponseFormat } from 'openai/helpers/zod';
-import pRetry from 'p-retry';
-import { BaseLLM, GenerateOptions, RawLLMResponse } from './base-llm';
+import { BaseLLM, GenerateOptions, RawLLMResponse, SchemaDescriptor } from './base-llm';
 
 /**
  * Model pricing per 1M tokens (as of implementation)
@@ -23,14 +20,6 @@ const MODEL_PRICING: Record<string, { input: number; output: number }> = {
  */
 export class OpenAIModel extends BaseLLM {
   private client: OpenAI;
-  private retryOptions = {
-    retries: 3,
-    minTimeout: 1000,
-    factor: 2,
-    onFailedAttempt: (error: any) => {
-      console.error(`Attempt ${error.attemptNumber} failed. ${error.retriesLeft} retries left.`);
-    },
-  };
 
   constructor(
     modelName: string = 'gpt-4o-mini',
@@ -45,119 +34,90 @@ export class OpenAIModel extends BaseLLM {
   }
 
   async generate(prompt: string, options?: GenerateOptions): Promise<string> {
-    return pRetry(async () => {
-      const response = await this.client.chat.completions.create({
-        model: this.modelName,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: options?.temperature ?? null,
-        max_tokens: options?.maxTokens ?? null,
-        top_p: options?.topP ?? null,
-      });
+    const response = await this.client.chat.completions.create({
+      model: this.modelName,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: options?.temperature ?? null,
+      max_tokens: options?.maxTokens ?? null,
+      top_p: options?.topP ?? null,
+    });
 
-      return response.choices[0]?.message?.content || '';
-    }, this.retryOptions);
+    return response.choices[0]?.message?.content || '';
   }
 
   async generateStructured<T>(
     prompt: string,
-    schema: z.ZodSchema<T>,
+    schema: SchemaDescriptor,
     options?: GenerateOptions
   ): Promise<T> {
-    // Check if model supports structured outputs
-    const supportsStructuredOutput = [
-      'gpt-4o',
-      'gpt-4o-mini',
-      'gpt-4-turbo',
-    ].includes(this.modelName);
+    // Generate JSON prompt with schema
+    const jsonPrompt = `${prompt}\n\nRespond with valid JSON that matches this structure: ${JSON.stringify(
+      schema,
+      null,
+      2
+    )}`;
 
-    if (supportsStructuredOutput) {
-      return pRetry(async () => {
-        const response = await this.client.beta.chat.completions.parse({
-          model: this.modelName,
-          messages: [{ role: 'user', content: prompt }],
-          response_format: zodResponseFormat(schema, 'response'),
-          temperature: options?.temperature ?? null,
-          max_tokens: options?.maxTokens ?? null,
-          top_p: options?.topP ?? null,
-        });
+    const response = await this.client.chat.completions.create({
+      model: this.modelName,
+      messages: [{ role: 'user', content: jsonPrompt }],
+      response_format: { type: 'json_object' },
+      temperature: options?.temperature ?? null,
+      max_tokens: options?.maxTokens ?? null,
+      top_p: options?.topP ?? null,
+    });
 
-        const parsed = response.choices[0]?.message?.parsed;
-        if (!parsed) {
-          throw new Error('Failed to parse structured response');
-        }
-
-        return parsed as T;
-      }, this.retryOptions);
-    } else {
-      // Fallback: Use JSON mode and manual parsing
-      const jsonPrompt = `${prompt}\n\nRespond with valid JSON that matches this structure: ${JSON.stringify(
-        zodToJsonSchema(schema),
-        null,
-        2
-      )}`;
-
-      return pRetry(async () => {
-        const response = await this.client.chat.completions.create({
-          model: this.modelName,
-          messages: [{ role: 'user', content: jsonPrompt }],
-          response_format: { type: 'json_object' },
-          temperature: options?.temperature ?? null,
-          max_tokens: options?.maxTokens ?? null,
-          top_p: options?.topP ?? null,
-        });
-
-        const content = response.choices[0]?.message?.content || '{}';
-        const parsed = JSON.parse(content);
-        return schema.parse(parsed);
-      }, this.retryOptions);
-    }
+    const content = response.choices[0]?.message?.content || '{}';
+    const parsed = JSON.parse(content);
+    
+    // Basic validation
+    this.validateSchema(parsed, schema);
+    
+    return parsed as T;
   }
 
   async generateRaw(
     prompt: string,
     options?: GenerateOptions
   ): Promise<RawLLMResponse> {
-    return pRetry(async () => {
-      const response = await this.client.chat.completions.create({
-        model: this.modelName,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: options?.temperature ?? null,
-        max_tokens: options?.maxTokens ?? null,
-        top_p: options?.topP ?? null,
-        logprobs: options?.topLogprobs ? true : null,
-        top_logprobs: options?.topLogprobs ?? null,
-      });
+    const response = await this.client.chat.completions.create({
+      model: this.modelName,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: options?.temperature ?? null,
+      max_tokens: options?.maxTokens ?? null,
+      top_p: options?.topP ?? null,
+      logprobs: options?.topLogprobs ? true : null,
+      top_logprobs: options?.topLogprobs ?? null,
+    });
 
-      const choice = response.choices[0];
-      if (!choice?.message?.content) {
-        throw new Error('No content in response');
-      }
+    const choice = response.choices[0];
+    if (!choice?.message?.content) {
+      throw new Error('No content in response');
+    }
 
-      const result: RawLLMResponse = {
-        content: choice.message.content,
+    const result: RawLLMResponse = {
+      content: choice.message.content,
+    };
+
+    if (response.usage) {
+      result.usage = {
+        promptTokens: response.usage.prompt_tokens,
+        completionTokens: response.usage.completion_tokens,
+        totalTokens: response.usage.total_tokens,
       };
+    }
 
-      if (response.usage) {
-        result.usage = {
-          promptTokens: response.usage.prompt_tokens,
-          completionTokens: response.usage.completion_tokens,
-          totalTokens: response.usage.total_tokens,
-        };
-      }
+    if (choice.logprobs?.content) {
+      result.logprobs = choice.logprobs.content.map((lp) => ({
+        token: lp.token,
+        logprob: lp.logprob,
+        topLogprobs: lp.top_logprobs?.map((tlp) => ({
+          token: tlp.token,
+          logprob: tlp.logprob,
+        })),
+      }));
+    }
 
-      if (choice.logprobs?.content) {
-        result.logprobs = choice.logprobs.content.map((lp) => ({
-          token: lp.token,
-          logprob: lp.logprob,
-          topLogprobs: lp.top_logprobs?.map((tlp) => ({
-            token: tlp.token,
-            logprob: tlp.logprob,
-          })),
-        }));
-      }
-
-      return result;
-    }, this.retryOptions);
+    return result;
   }
 
   calculateCost(usage: { promptTokens: number; completionTokens: number }): number {
@@ -170,41 +130,51 @@ export class OpenAIModel extends BaseLLM {
     const outputCost = (usage.completionTokens / 1_000_000) * pricing.output;
     return inputCost + outputCost;
   }
-}
 
-/**
- * Simple helper to convert Zod schema to JSON schema representation
- */
-function zodToJsonSchema(schema: z.ZodSchema<any>): any {
-  if (schema instanceof z.ZodObject) {
-    const shape = schema.shape;
-    const properties: any = {};
-    const required: string[] = [];
-
-    for (const [key, value] of Object.entries(shape)) {
-      properties[key] = zodToJsonSchema(value as z.ZodSchema<any>);
-      if (!(value as any).isOptional()) {
-        required.push(key);
+  /**
+   * Basic schema validation
+   */
+  private validateSchema(data: any, schema: SchemaDescriptor, path: string = ''): void {
+    if (schema.type === 'object' && schema.properties) {
+      if (typeof data !== 'object' || data === null) {
+        throw new Error(`Expected object at ${path || 'root'}, got ${typeof data}`);
+      }
+      
+      // Check required fields
+      if (schema.required) {
+        for (const field of schema.required) {
+          if (!(field in data)) {
+            throw new Error(`Missing required field: ${path ? path + '.' : ''}${field}`);
+          }
+        }
+      }
+      
+      // Validate properties
+      for (const [key, propSchema] of Object.entries(schema.properties)) {
+        if (key in data) {
+          this.validateSchema(data[key], propSchema, path ? `${path}.${key}` : key);
+        }
+      }
+    } else if (schema.type === 'array' && schema.items) {
+      if (!Array.isArray(data)) {
+        throw new Error(`Expected array at ${path || 'root'}, got ${typeof data}`);
+      }
+      
+      data.forEach((item, index) => {
+        this.validateSchema(item, schema.items!, `${path}[${index}]`);
+      });
+    } else if (schema.type === 'string') {
+      if (typeof data !== 'string') {
+        throw new Error(`Expected string at ${path || 'root'}, got ${typeof data}`);
+      }
+    } else if (schema.type === 'number') {
+      if (typeof data !== 'number') {
+        throw new Error(`Expected number at ${path || 'root'}, got ${typeof data}`);
+      }
+    } else if (schema.type === 'boolean') {
+      if (typeof data !== 'boolean') {
+        throw new Error(`Expected boolean at ${path || 'root'}, got ${typeof data}`);
       }
     }
-
-    return {
-      type: 'object',
-      properties,
-      required,
-    };
-  } else if (schema instanceof z.ZodString) {
-    return { type: 'string' };
-  } else if (schema instanceof z.ZodNumber) {
-    return { type: 'number' };
-  } else if (schema instanceof z.ZodBoolean) {
-    return { type: 'boolean' };
-  } else if (schema instanceof z.ZodArray) {
-    return {
-      type: 'array',
-      items: zodToJsonSchema(schema.element),
-    };
   }
-
-  return {};
 }

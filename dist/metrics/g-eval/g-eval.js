@@ -12,7 +12,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GEval = void 0;
 const base_metric_1 = require("../../core/base-metric");
 const templates_1 = require("./templates");
-const schemas_1 = require("./schemas");
+// Schema descriptors for structured generation
+const EvaluationStepsSchemaDescriptor = {
+    type: 'object',
+    properties: {
+        steps: {
+            type: 'array',
+            items: { type: 'string' }
+        }
+    },
+    required: ['steps']
+};
+const EvaluationResultSchemaDescriptor = {
+    type: 'object',
+    properties: {
+        score: { type: 'number' },
+        reason: { type: 'string' }
+    },
+    required: ['score', 'reason']
+};
 /**
  * G-Eval metric implementation
  *
@@ -94,7 +112,7 @@ class GEval extends base_metric_1.BaseMetric {
     generateEvaluationSteps() {
         return __awaiter(this, void 0, void 0, function* () {
             const prompt = (0, templates_1.generateEvaluationStepsPrompt)(this.config.evaluationParams, this.config.criteria);
-            const response = yield this.model.generateStructured(prompt, schemas_1.EvaluationStepsSchema);
+            const response = yield this.model.generateStructured(prompt, EvaluationStepsSchemaDescriptor);
             // Update cost if model provides usage
             const rawResponse = yield this.model.generateRaw(prompt);
             if (rawResponse.usage) {
@@ -109,7 +127,7 @@ class GEval extends base_metric_1.BaseMetric {
     evaluateTestCase(evaluationSteps, testCaseContent) {
         return __awaiter(this, void 0, void 0, function* () {
             const prompt = (0, templates_1.generateEvaluationPrompt)(evaluationSteps, testCaseContent, this.config.strictMode || false, this.config.rubric);
-            const response = yield this.model.generateStructured(prompt, schemas_1.EvaluationResultSchema);
+            const response = yield this.model.generateStructured(prompt, EvaluationResultSchemaDescriptor);
             // Update cost if model provides usage
             const rawResponse = yield this.model.generateRaw(prompt);
             if (rawResponse.usage) {

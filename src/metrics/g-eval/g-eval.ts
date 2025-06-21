@@ -1,16 +1,36 @@
 import { BaseMetric } from '../../core/base-metric';
 import { LLMTestCase, MetricResult, GEvalConfig, EvaluationParam } from '../../core/types';
-import { BaseLLM } from '../../models/base-llm';
+import { BaseLLM, SchemaDescriptor } from '../../models/base-llm';
 import { 
   generateEvaluationStepsPrompt, 
   generateEvaluationPrompt,
   extractTestCaseContent 
 } from './templates';
 import { 
-  EvaluationStepsSchema, 
-  EvaluationResultSchema,
+  EvaluationStepsResponse,
   EvaluationResult 
 } from './schemas';
+
+// Schema descriptors for structured generation
+const EvaluationStepsSchemaDescriptor: SchemaDescriptor = {
+  type: 'object',
+  properties: {
+    steps: {
+      type: 'array',
+      items: { type: 'string' }
+    }
+  },
+  required: ['steps']
+};
+
+const EvaluationResultSchemaDescriptor: SchemaDescriptor = {
+  type: 'object',
+  properties: {
+    score: { type: 'number' },
+    reason: { type: 'string' }
+  },
+  required: ['score', 'reason']
+};
 
 /**
  * G-Eval metric implementation
@@ -116,9 +136,9 @@ export class GEval extends BaseMetric<GEvalConfig> {
       this.config.criteria
     );
 
-    const response = await this.model.generateStructured(
+    const response = await this.model.generateStructured<EvaluationStepsResponse>(
       prompt,
-      EvaluationStepsSchema
+      EvaluationStepsSchemaDescriptor
     );
 
     // Update cost if model provides usage
@@ -144,9 +164,9 @@ export class GEval extends BaseMetric<GEvalConfig> {
       this.config.rubric
     );
 
-    const response = await this.model.generateStructured(
+    const response = await this.model.generateStructured<EvaluationResult>(
       prompt,
-      EvaluationResultSchema
+      EvaluationResultSchemaDescriptor
     );
 
     // Update cost if model provides usage

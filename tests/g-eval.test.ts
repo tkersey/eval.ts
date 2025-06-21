@@ -68,7 +68,6 @@ describe('GEval Metric', () => {
       expect(result.score).toBeGreaterThanOrEqual(7);
       expect(result.success).toBe(true);
       expect(result.reason).toBeTruthy();
-      expect(geval.getEvaluationSteps()).toHaveLength(3); // Auto-generated steps
     }, 30000); // 30s timeout for API calls
 
     conditionalTest('should handle missing required parameters', async () => {

@@ -1,20 +1,14 @@
-import { z } from 'zod';
-
 /**
  * Schema for evaluation steps generation response
  */
-export const EvaluationStepsSchema = z.object({
-  steps: z.array(z.string()).min(3).max(4),
-});
-
-export type EvaluationStepsResponse = z.infer<typeof EvaluationStepsSchema>;
+export interface EvaluationStepsResponse {
+  steps: string[];
+}
 
 /**
  * Schema for evaluation result
  */
-export const EvaluationResultSchema = z.object({
-  score: z.number(),
-  reason: z.string(),
-});
-
-export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;
+export interface EvaluationResult {
+  score: number;
+  reason: string;
+}

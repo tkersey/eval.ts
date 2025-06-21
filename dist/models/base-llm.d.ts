@@ -1,4 +1,3 @@
-import { z } from 'zod';
 /**
  * Options for generating text
  */
@@ -28,6 +27,15 @@ export interface RawLLMResponse {
     };
 }
 /**
+ * Schema descriptor for structured generation
+ */
+export interface SchemaDescriptor {
+    type: string;
+    properties?: Record<string, SchemaDescriptor>;
+    items?: SchemaDescriptor;
+    required?: string[];
+}
+/**
  * Abstract base class for LLM models
  */
 export declare abstract class BaseLLM {
@@ -38,9 +46,9 @@ export declare abstract class BaseLLM {
      */
     abstract generate(prompt: string, options?: GenerateOptions): Promise<string>;
     /**
-     * Generate structured output using a Zod schema
+     * Generate structured output using a schema descriptor
      */
-    abstract generateStructured<T>(prompt: string, schema: z.ZodSchema<T>, options?: GenerateOptions): Promise<T>;
+    abstract generateStructured<T>(prompt: string, schema: SchemaDescriptor, options?: GenerateOptions): Promise<T>;
     /**
      * Get raw response with log probabilities if supported
      */
