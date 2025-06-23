@@ -97,10 +97,10 @@ const geval = new GEval(model, {
   name: 'Response Quality',
   evaluationParams: ['input', 'actualOutput'],
   rubric: [
-    { score: 0, description: 'Completely off-topic or incorrect' },
-    { score: 3, description: 'Partially addresses the question' },
-    { score: 7, description: 'Good answer with minor issues' },
-    { score: 10, description: 'Perfect, comprehensive answer' },
+    { score: 0.0, description: 'Completely off-topic or incorrect' },
+    { score: 0.3, description: 'Partially addresses the question' },
+    { score: 0.7, description: 'Good answer with minor issues' },
+    { score: 1.0, description: 'Perfect, comprehensive answer' },
   ],
   threshold: 0.7,
 });
@@ -200,7 +200,7 @@ interface LLMTestCase {
 }
 
 interface MetricResult {
-  score: number;      // 0-10 (or 0-1 in strict mode)
+  score: number;      // 0-1 range
   success: boolean;   // score >= threshold
   reason: string;     // Evaluation reasoning
   evaluationCost?: number;

@@ -58,7 +58,7 @@ export function generateEvaluationPrompt(
   // Format scoring instructions
   const scoringInstructions = strictMode
     ? 'Give a binary score of either 0 (fail) or 1 (pass).'
-    : 'Provide a score from 0 to 10, where 0 is the worst and 10 is the best.';
+    : 'Provide a score from 0.0 to 1.0, where 0.0 is the worst and 1.0 is the best. You may use decimal values like 0.7, 0.85, etc.';
 
   return `You will be given evaluation steps, inputs, and outputs to evaluate.
 

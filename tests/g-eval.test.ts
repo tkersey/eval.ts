@@ -65,7 +65,7 @@ describe('GEval Metric', () => {
 
       const result = await geval.evaluate(testCase);
 
-      expect(result.score).toBeGreaterThanOrEqual(7);
+      expect(result.score).toBeGreaterThanOrEqual(0.7);
       expect(result.success).toBe(true);
       expect(result.reason).toBeTruthy();
     }, 30000); // 30s timeout for API calls
@@ -111,7 +111,7 @@ describe('GEval Metric', () => {
 
       const result = await geval.evaluate(testCase);
 
-      expect(result.score).toBeGreaterThanOrEqual(8);
+      expect(result.score).toBeGreaterThanOrEqual(0.8);
       expect(result.success).toBe(true);
       expect(geval.getEvaluationSteps()).toEqual(customSteps);
     }, 30000);
@@ -143,10 +143,10 @@ describe('GEval Metric', () => {
         evaluationParams: ['input', 'actualOutput'],
         criteria: 'Evaluate the quality of the mathematical explanation',
         rubric: [
-          { score: 0, description: 'No mathematical content or completely wrong' },
-          { score: 3, description: 'Shows basic understanding but with errors' },
-          { score: 7, description: 'Correct answer with adequate explanation' },
-          { score: 10, description: 'Perfect answer with detailed step-by-step explanation' },
+          { score: 0.0, description: 'No mathematical content or completely wrong' },
+          { score: 0.3, description: 'Shows basic understanding but with errors' },
+          { score: 0.7, description: 'Correct answer with adequate explanation' },
+          { score: 1.0, description: 'Perfect answer with detailed step-by-step explanation' },
         ],
         threshold: 0.6,
       });
@@ -158,7 +158,7 @@ describe('GEval Metric', () => {
 
       const result = await geval.evaluate(testCase);
 
-      expect(result.score).toBeGreaterThanOrEqual(6);
+      expect(result.score).toBeGreaterThanOrEqual(0.6);
       expect(result.success).toBe(true);
       expect(result.reason).toContain('formula');
     }, 30000);
@@ -182,7 +182,7 @@ describe('GEval Metric', () => {
 
       const result = await geval.evaluate(testCase);
 
-      expect(result.score).toBeGreaterThanOrEqual(7.5);
+      expect(result.score).toBeGreaterThanOrEqual(0.75);
       expect(result.success).toBe(true);
     }, 30000);
   });

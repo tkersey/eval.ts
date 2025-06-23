@@ -173,25 +173,31 @@ class GEval extends base_metric_1.BaseMetric {
      * Calculate weighted score from log probabilities
      */
     calculateWeightedScore(logprobs) {
-        // Find score tokens (digits 0-10)
+        // Find score tokens (decimal numbers between 0 and 1)
         const scoreTokens = logprobs.filter(lp => {
             const token = lp.token.trim();
-            return /^\d+$/.test(token) && parseInt(token) >= 0 && parseInt(token) <= 10;
+            // Match decimal numbers like 0.7, 0.85, 1.0, etc.
+            const match = /^(0(\.\d+)?|1(\.0+)?)$/.test(token);
+            if (match) {
+                const value = parseFloat(token);
+                return value >= 0 && value <= 1;
+            }
+            return false;
         });
         if (scoreTokens.length === 0) {
             // No score tokens found, return middle score
-            return 5;
+            return 0.5;
         }
         // Calculate weighted average based on log probabilities
         let weightedSum = 0;
         let totalWeight = 0;
         for (const scoreToken of scoreTokens) {
-            const score = parseInt(scoreToken.token.trim());
+            const score = parseFloat(scoreToken.token.trim());
             const weight = Math.exp(scoreToken.logprob); // Convert log prob to probability
             weightedSum += score * weight;
             totalWeight += weight;
         }
-        return totalWeight > 0 ? weightedSum / totalWeight : 5;
+        return totalWeight > 0 ? weightedSum / totalWeight : 0.5;
     }
     /**
      * Get the name of this metric
