@@ -1,14 +1,14 @@
 import { BaseMetric } from '../../core/base-metric';
 import { LLMTestCase, MetricResult, GEvalConfig, EvaluationParam } from '../../core/types';
 import { BaseLLM, SchemaDescriptor } from '../../models/base-llm';
-import { 
-  generateEvaluationStepsPrompt, 
+import {
+  generateEvaluationStepsPrompt,
   generateEvaluationPrompt,
-  extractTestCaseContent 
+  extractTestCaseContent
 } from './templates';
-import { 
+import {
   EvaluationStepsResponse,
-  EvaluationResult 
+  EvaluationResult
 } from './schemas';
 
 // Schema descriptors for structured generation
@@ -34,7 +34,7 @@ const EvaluationResultSchemaDescriptor: SchemaDescriptor = {
 
 /**
  * G-Eval metric implementation
- * 
+ *
  * G-Eval is a flexible LLM-based evaluation metric that can evaluate
  * any combination of test case parameters based on custom criteria.
  */
@@ -43,16 +43,16 @@ export class GEval extends BaseMetric<GEvalConfig> {
 
   constructor(model: BaseLLM, config: GEvalConfig) {
     super(model, config);
-    
+
     // Validate configuration
     if (config.evaluationParams.length === 0) {
       throw new Error('At least one evaluation parameter must be specified');
     }
-    
+
     if (config.strictMode && config.rubric) {
       throw new Error('Rubric is not supported in strict mode');
     }
-    
+
     // Set evaluation steps if provided
     if (config.evaluationSteps) {
       this.evaluationSteps = config.evaluationSteps;
@@ -89,6 +89,11 @@ export class GEval extends BaseMetric<GEvalConfig> {
 
       // Check if evaluation was successful
       const success = this.isSuccessful(finalScore);
+      console.log('Evaluation Results:', {
+        score: finalScore,
+        success,
+        reason: result.reason,
+      });
 
       return {
         score: finalScore,
@@ -98,6 +103,7 @@ export class GEval extends BaseMetric<GEvalConfig> {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error Occurred: ${errorMessage}`);
       return {
         score: 0,
         success: false,
@@ -241,7 +247,7 @@ export class GEval extends BaseMetric<GEvalConfig> {
     for (const scoreToken of scoreTokens) {
       const score = parseInt(scoreToken.token.trim());
       const weight = Math.exp(scoreToken.logprob); // Convert log prob to probability
-      
+
       weightedSum += score * weight;
       totalWeight += weight;
     }

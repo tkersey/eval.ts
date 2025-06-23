@@ -73,6 +73,11 @@ class GEval extends base_metric_1.BaseMetric {
                 const finalScore = yield this.calculateFinalScore(result);
                 // Check if evaluation was successful
                 const success = this.isSuccessful(finalScore);
+                console.log('Evaluation Results:', {
+                    score: finalScore,
+                    success,
+                    reason: result.reason,
+                });
                 return {
                     score: finalScore,
                     success,
@@ -82,6 +87,7 @@ class GEval extends base_metric_1.BaseMetric {
             }
             catch (error) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
+                console.error(`Error Occurred: ${errorMessage}`);
                 return {
                     score: 0,
                     success: false,
