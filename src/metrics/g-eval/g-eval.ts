@@ -56,6 +56,10 @@ export class GEval extends BaseMetric<GEvalConfig> {
     // Set evaluation steps if provided
     if (config.evaluationSteps) {
       this.evaluationSteps = config.evaluationSteps;
+      console.log('Using Pre-defined Evaluation Steps:', {
+        criteria: config.criteria || 'No specific criteria provided',
+        steps: config.evaluationSteps,
+      });
     }
   }
 
@@ -152,6 +156,11 @@ export class GEval extends BaseMetric<GEvalConfig> {
     if (rawResponse.usage) {
       this.evaluationCost += this.model.calculateCost(rawResponse.usage);
     }
+
+    console.log('Generated Evaluation Steps:', {
+      criteria: this.config.criteria || 'No specific criteria provided',
+      steps: response.steps,
+    });
 
     return response.steps;
   }
