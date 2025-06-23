@@ -193,7 +193,7 @@ class GEval extends base_metric_1.BaseMetric {
         let totalWeight = 0;
         for (const scoreToken of scoreTokens) {
             const score = parseFloat(scoreToken.token.trim());
-            const weight = Math.exp(scoreToken.logprob); // Convert log prob to probability
+            const weight = Math.exp(scoreToken.logprob);
             weightedSum += score * weight;
             totalWeight += weight;
         }
