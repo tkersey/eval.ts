@@ -68,6 +68,11 @@ export class GEval extends BaseMetric<GEvalConfig> {
    */
   async evaluate(testCase: LLMTestCase): Promise<MetricResult> {
     try {
+      // Reset session for independent evaluation
+      if ('resetSession' in this.model && typeof this.model.resetSession === 'function') {
+        this.model.resetSession();
+      }
+
       // Validate test case has required parameters
       this.validateTestCase(testCase);
 

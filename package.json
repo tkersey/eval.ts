@@ -45,15 +45,21 @@
     "type": "git",
     "url": "git+https://github.com/tkersey/eval.ts.git"
   },
-  "keywords": ["llm", "evaluation", "g-eval", "ai", "testing"],
+  "keywords": [
+    "llm",
+    "evaluation",
+    "g-eval",
+    "ai",
+    "testing"
+  ],
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "openai": "^4.0.0"
+    "openai": "^5.7.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
     "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",

@@ -63,6 +63,10 @@ class GEval extends base_metric_1.BaseMetric {
     evaluate(testCase) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                // Reset session for independent evaluation
+                if ('resetSession' in this.model && typeof this.model.resetSession === 'function') {
+                    this.model.resetSession();
+                }
                 // Validate test case has required parameters
                 this.validateTestCase(testCase);
                 // Generate evaluation steps if not provided
