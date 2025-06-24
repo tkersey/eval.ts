@@ -108,7 +108,6 @@ export class GEval extends BaseMetric<GEvalConfig> {
         score: finalScore,
         success,
         reason: result.reason,
-        evaluationCost: this.evaluationCost,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -118,7 +117,6 @@ export class GEval extends BaseMetric<GEvalConfig> {
         success: false,
         reason: `Evaluation failed: ${errorMessage}`,
         error: errorMessage,
-        evaluationCost: this.evaluationCost,
       };
     }
   }
@@ -156,12 +154,6 @@ export class GEval extends BaseMetric<GEvalConfig> {
       EvaluationStepsSchemaDescriptor
     );
 
-    // Update cost if model provides usage
-    const rawResponse = await this.model.generateRaw(prompt);
-    if (rawResponse.usage) {
-      this.evaluationCost += this.model.calculateCost(rawResponse.usage);
-    }
-
     console.log('Generated Evaluation Steps:', {
       criteria: this.config.criteria || 'No specific criteria provided',
       steps: response.steps,
@@ -188,12 +180,6 @@ export class GEval extends BaseMetric<GEvalConfig> {
       prompt,
       EvaluationResultSchemaDescriptor
     );
-
-    // Update cost if model provides usage
-    const rawResponse = await this.model.generateRaw(prompt);
-    if (rawResponse.usage) {
-      this.evaluationCost += this.model.calculateCost(rawResponse.usage);
-    }
 
     return response;
   }
@@ -223,10 +209,6 @@ export class GEval extends BaseMetric<GEvalConfig> {
     const rawResponse = await this.model.generateRaw(prompt, {
       topLogprobs: this.config.topLogprobs,
     });
-
-    if (rawResponse.usage) {
-      this.evaluationCost += this.model.calculateCost(rawResponse.usage);
-    }
 
     // If we have log probabilities, calculate weighted score
     if (rawResponse.logprobs) {

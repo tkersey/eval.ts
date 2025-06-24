@@ -17,23 +17,10 @@ const openai_1 = __importDefault(require("openai"));
 const error_1 = require("openai/error");
 const base_llm_1 = require("./base-llm");
 /**
- * Model pricing per 1M tokens (as of implementation)
- */
-const MODEL_PRICING = {
-    'gpt-4o': { input: 2.5, output: 10 },
-    'gpt-4o-mini': { input: 0.15, output: 0.6 },
-    'gpt-4-turbo': { input: 10, output: 30 },
-    'gpt-4': { input: 30, output: 60 },
-    'gpt-3.5-turbo': { input: 0.5, output: 1.5 },
-    'o1-preview': { input: 15, output: 60 },
-    'o1-mini': { input: 3, output: 12 },
-    'o3-mini': { input: 1.1, output: 4.4 },
-};
-/**
  * OpenAI LLM implementation using the new Responses API
  */
 class OpenAIModel extends base_llm_1.BaseLLM {
-    constructor(modelName = 'gpt-4o-mini', apiKey, options) {
+    constructor(modelName = 'o3', apiKey, options) {
         super(modelName);
         this.client = new openai_1.default(Object.assign({ apiKey: apiKey || process.env['OPENAI_API_KEY'] }, options));
     }
@@ -158,15 +145,6 @@ class OpenAIModel extends base_llm_1.BaseLLM {
                 throw error;
             }
         });
-    }
-    calculateCost(usage) {
-        const pricing = MODEL_PRICING[this.modelName];
-        if (!pricing) {
-            return 0;
-        }
-        const inputCost = (usage.promptTokens / 1000000) * pricing.input;
-        const outputCost = (usage.completionTokens / 1000000) * pricing.output;
-        return inputCost + outputCost;
     }
     /**
      * Convert SchemaDescriptor to JSON Schema format

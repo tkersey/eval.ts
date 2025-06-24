@@ -3,20 +3,6 @@ import { APIError, RateLimitError, APIConnectionError } from 'openai/error';
 import { BaseLLM, GenerateOptions, RawLLMResponse, SchemaDescriptor } from './base-llm';
 
 /**
- * Model pricing per 1M tokens (as of implementation)
- */
-const MODEL_PRICING: Record<string, { input: number; output: number }> = {
-  'gpt-4o': { input: 2.5, output: 10 },
-  'gpt-4o-mini': { input: 0.15, output: 0.6 },
-  'gpt-4-turbo': { input: 10, output: 30 },
-  'gpt-4': { input: 30, output: 60 },
-  'gpt-3.5-turbo': { input: 0.5, output: 1.5 },
-  'o1-preview': { input: 15, output: 60 },
-  'o1-mini': { input: 3, output: 12 },
-  'o3-mini': { input: 1.1, output: 4.4 },
-};
-
-/**
  * OpenAI LLM implementation using the new Responses API
  */
 export class OpenAIModel extends BaseLLM {
@@ -24,7 +10,7 @@ export class OpenAIModel extends BaseLLM {
   private sessionId?: string;
 
   constructor(
-    modelName: string = 'gpt-4o-mini',
+    modelName: string = 'o3',
     apiKey?: string,
     options?: { baseURL?: string }
   ) {
@@ -161,16 +147,6 @@ export class OpenAIModel extends BaseLLM {
     }
   }
 
-  calculateCost(usage: { promptTokens: number; completionTokens: number }): number {
-    const pricing = MODEL_PRICING[this.modelName];
-    if (!pricing) {
-      return 0;
-    }
-
-    const inputCost = (usage.promptTokens / 1_000_000) * pricing.input;
-    const outputCost = (usage.completionTokens / 1_000_000) * pricing.output;
-    return inputCost + outputCost;
-  }
 
   /**
    * Convert SchemaDescriptor to JSON Schema format

@@ -55,7 +55,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "openai": "^5.7.0"
+    "openai": "^4.104.0"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",

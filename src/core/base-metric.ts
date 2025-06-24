@@ -7,7 +7,6 @@ import { BaseLLM } from '../models/base-llm';
 export abstract class BaseMetric<TConfig extends MetricConfig = MetricConfig> {
   protected config: TConfig;
   protected model: BaseLLM;
-  protected evaluationCost: number = 0;
 
   constructor(model: BaseLLM, config: TConfig) {
     this.model = model;
@@ -29,19 +28,5 @@ export abstract class BaseMetric<TConfig extends MetricConfig = MetricConfig> {
    */
   protected isSuccessful(score: number): boolean {
     return score >= this.config.threshold;
-  }
-
-  /**
-   * Get the total cost of evaluation
-   */
-  getEvaluationCost(): number {
-    return this.evaluationCost;
-  }
-
-  /**
-   * Reset the evaluation cost
-   */
-  resetCost(): void {
-    this.evaluationCost = 0;
   }
 }

@@ -21,7 +21,6 @@ export interface MetricResult {
     score: number;
     success: boolean;
     reason: string;
-    evaluationCost?: number;
     error?: string;
 }
 /**

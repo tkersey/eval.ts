@@ -6,7 +6,6 @@ exports.BaseMetric = void 0;
  */
 class BaseMetric {
     constructor(model, config) {
-        this.evaluationCost = 0;
         this.model = model;
         this.config = config;
     }
@@ -15,18 +14,6 @@ class BaseMetric {
      */
     isSuccessful(score) {
         return score >= this.config.threshold;
-    }
-    /**
-     * Get the total cost of evaluation
-     */
-    getEvaluationCost() {
-        return this.evaluationCost;
-    }
-    /**
-     * Reset the evaluation cost
-     */
-    resetCost() {
-        this.evaluationCost = 0;
     }
 }
 exports.BaseMetric = BaseMetric;

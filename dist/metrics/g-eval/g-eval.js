@@ -90,7 +90,6 @@ class GEval extends base_metric_1.BaseMetric {
                     score: finalScore,
                     success,
                     reason: result.reason,
-                    evaluationCost: this.evaluationCost,
                 };
             }
             catch (error) {
@@ -101,7 +100,6 @@ class GEval extends base_metric_1.BaseMetric {
                     success: false,
                     reason: `Evaluation failed: ${errorMessage}`,
                     error: errorMessage,
-                    evaluationCost: this.evaluationCost,
                 };
             }
         });
@@ -127,11 +125,6 @@ class GEval extends base_metric_1.BaseMetric {
         return __awaiter(this, void 0, void 0, function* () {
             const prompt = (0, templates_1.generateEvaluationStepsPrompt)(this.config.evaluationParams, this.config.criteria);
             const response = yield this.model.generateStructured(prompt, EvaluationStepsSchemaDescriptor);
-            // Update cost if model provides usage
-            const rawResponse = yield this.model.generateRaw(prompt);
-            if (rawResponse.usage) {
-                this.evaluationCost += this.model.calculateCost(rawResponse.usage);
-            }
             console.log('Generated Evaluation Steps:', {
                 criteria: this.config.criteria || 'No specific criteria provided',
                 steps: response.steps,
@@ -146,11 +139,6 @@ class GEval extends base_metric_1.BaseMetric {
         return __awaiter(this, void 0, void 0, function* () {
             const prompt = (0, templates_1.generateEvaluationPrompt)(evaluationSteps, testCaseContent, this.config.strictMode || false, this.config.rubric);
             const response = yield this.model.generateStructured(prompt, EvaluationResultSchemaDescriptor);
-            // Update cost if model provides usage
-            const rawResponse = yield this.model.generateRaw(prompt);
-            if (rawResponse.usage) {
-                this.evaluationCost += this.model.calculateCost(rawResponse.usage);
-            }
             return response;
         });
     }
@@ -170,9 +158,6 @@ class GEval extends base_metric_1.BaseMetric {
             const rawResponse = yield this.model.generateRaw(prompt, {
                 topLogprobs: this.config.topLogprobs,
             });
-            if (rawResponse.usage) {
-                this.evaluationCost += this.model.calculateCost(rawResponse.usage);
-            }
             // If we have log probabilities, calculate weighted score
             if (rawResponse.logprobs) {
                 return this.calculateWeightedScore(rawResponse.logprobs);

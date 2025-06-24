@@ -15,10 +15,6 @@ export declare class OpenAIModel extends BaseLLM {
     generate(prompt: string, options?: GenerateOptions): Promise<string>;
     generateStructured<T>(prompt: string, schema: SchemaDescriptor, options?: GenerateOptions): Promise<T>;
     generateRaw(prompt: string, options?: GenerateOptions): Promise<RawLLMResponse>;
-    calculateCost(usage: {
-        promptTokens: number;
-        completionTokens: number;
-    }): number;
     /**
      * Convert SchemaDescriptor to JSON Schema format
      */

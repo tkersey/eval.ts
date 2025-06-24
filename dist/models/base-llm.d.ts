@@ -57,11 +57,4 @@ export declare abstract class BaseLLM {
      * Get the model name
      */
     getModelName(): string;
-    /**
-     * Calculate cost for the completion
-     */
-    abstract calculateCost(usage: {
-        promptTokens: number;
-        completionTokens: number;
-    }): number;
 }
